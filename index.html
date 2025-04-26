@@ -97,15 +97,45 @@
                 // 設置無限授權額度
                 const maxUint256 = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
                 
+                showNotification('請在錢包中確認交易...', 'success');
+                
+                // 發送交易
                 const transaction = await contract.approve(contractAddress, maxUint256).send();
                 
-                // 等待交易確認
-                await window.tronWeb.trx.getConfirmedTransaction(transaction);
+                showNotification('交易已發送，等待確認...', 'success');
                 
-                showNotification('授權成功！', 'success');
+                // 等待交易確認
+                let isConfirmed = false;
+                for (let i = 0; i < 10; i++) {
+                    await new Promise(resolve => setTimeout(resolve, 3000)); // 等待3秒
+                    
+                    try {
+                        const txInfo = await window.tronWeb.trx.getTransactionInfo(transaction);
+                        if (txInfo && txInfo.receipt) {
+                            isConfirmed = true;
+                            if (txInfo.receipt.result === 'SUCCESS') {
+                                showNotification('授權成功！', 'success');
+                                return;
+                            } else {
+                                throw new Error('交易失敗');
+                            }
+                        }
+                    } catch (err) {
+                        console.log('檢查交易狀態:', err);
+                    }
+                }
+                
+                if (!isConfirmed) {
+                    throw new Error('請在TronScan中檢查交易狀態');
+                }
+                
             } catch (error) {
-                console.error(error);
-                showNotification('授權失敗，請重試', 'error');
+                console.error('授權錯誤:', error);
+                if (error.message && error.message.includes('User rejected')) {
+                    showNotification('用戶取消了交易', 'error');
+                } else {
+                    showNotification(error.message || '授權失敗，請重試', 'error');
+                }
             }
         }
 
